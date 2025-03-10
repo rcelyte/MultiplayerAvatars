@@ -44,8 +44,8 @@ namespace MultiplayerAvatars.Networking
             _sessionManager.playerConnectedEvent += HandlePlayerConnected;
             _sessionManager.playerDisconnectedEvent += HandlePlayerDisconnected;
 
-            Task.Run(() => UpdateAvatarHash(_playerAvatarManager.currentlySpawnedAvatar.prefab.fullPath));
-            _localPlayerAvatar.Scale = _playerAvatarManager.currentlySpawnedAvatar?.scale ?? 1f;
+            Task.Run(() => UpdateAvatarHash(Patches.FilePathPatch.Lookup(_playerAvatarManager.currentlySpawnedAvatar.prefab)));
+            _localPlayerAvatar.Scale = _playerAvatarManager.scale;
 
             _packetSerializer.RegisterCallback<CustomAvatarPacket>(HandleCustomAvatarPacket);
         }
@@ -76,7 +76,7 @@ namespace MultiplayerAvatars.Networking
                 return;
             }
 
-            Task.Run(() => UpdateAvatarHash(avatar.prefab.fullPath));
+            Task.Run(() => UpdateAvatarHash(Patches.FilePathPatch.Lookup(avatar.prefab)));
         }
 
         private void HandleAvatarScaleChanged(float scale)

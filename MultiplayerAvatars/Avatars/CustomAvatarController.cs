@@ -13,6 +13,7 @@ namespace MultiplayerAvatars.Avatars
 {
     internal class CustomAvatarController : MonoBehaviour
     {
+        readonly SynchronizationContext _syncContext = SynchronizationContext.Current;
 
         private CustomAvatarPacket _avatarPacket = new();
         private AvatarPrefab? _loadedAvatar;
@@ -22,7 +23,6 @@ namespace MultiplayerAvatars.Avatars
         private IConnectedPlayer _connectedPlayer = null!;
         private CustomAvatarManager _customAvatarManager = null!;
         private AvatarProviderService _avatarProvider = null!;
-        private AvatarPoseController _poseController = null!;
         private MultiplayerAvatarInput _avatarInput = null!;
         private SiraLog _logger = null!;
 
@@ -32,17 +32,17 @@ namespace MultiplayerAvatars.Avatars
             IConnectedPlayer connectedPlayer,
             CustomAvatarManager customAvatarManager,
             AvatarProviderService avatarProvider,
-            AvatarPoseController poseController,
+            BeatSaber.AvatarCore.AvatarController avatarController,
+            // BeatSaber.AvatarCore.IAvatarPoseDataProvider poseDataProvider,
             SiraLog logger)
         {
             _avatarSpawner = avatarSpawner;
             _avatarProvider = avatarProvider;
             _connectedPlayer = connectedPlayer;
             _customAvatarManager = customAvatarManager;
-            _poseController = poseController;
             _logger = logger;
 
-            _avatarInput = new MultiplayerAvatarInput(poseController);
+            _avatarInput = new MultiplayerAvatarInput(avatarController/*, poseDataProvider*/);
         }
 
         public void OnEnable()
@@ -77,21 +77,22 @@ namespace MultiplayerAvatars.Avatars
                 return;
             }
 
-            HMMainThreadDispatcher.instance.Enqueue(() => CreateAvatar(avatarPrefab));
+            _syncContext.Post(CreateAvatar, avatarPrefab);
         }
 
-        private void CreateAvatar(AvatarPrefab avatar)
+        private void CreateAvatar(object state)
         {
+            AvatarPrefab avatar = (AvatarPrefab)state;
             _loadedAvatar = avatar;
             if (_spawnedAvatar != null)
                 Destroy(_spawnedAvatar);
 
-            _spawnedAvatar = _avatarSpawner.SpawnAvatar(avatar, _avatarInput, _poseController.transform);
+            _spawnedAvatar = _avatarSpawner.SpawnAvatar(avatar, _avatarInput, transform);
             _avatarInput.SetEnabled(true);
             var avatarIk = _spawnedAvatar.GetComponent<AvatarIK>();
             if (avatarIk != null)
                 avatarIk.isLocomotionEnabled = true;
-            _spawnedAvatar.scale = _avatarPacket.Scale;
+            _spawnedAvatar.transform.localScale *= _avatarPacket.Scale;
         }
     }
 }

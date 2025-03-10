@@ -7,60 +7,44 @@ namespace MultiplayerAvatars.Avatars
 {
     internal class MultiplayerAvatarInput : IAvatarInput
     {
-        private readonly AvatarPoseController _poseController;
+        private readonly BeatSaber.AvatarCore.AvatarController _avatarController;
+        private readonly BeatSaber.AvatarCore.IAvatarPoseDataProvider _poseDataProvider;
 
-        private Transform headTransform;
-        private Transform rightHandTransform;
-        private Transform leftHandTransform;
-        private Transform bodyTransform;
+        private readonly Transform headTransform = new GameObject().transform;
+        private readonly Transform rightHandTransform = new GameObject().transform;
+        private readonly Transform leftHandTransform = new GameObject().transform;
 
-        private Pose head = new Pose();
-        private Pose rightHand = new Pose();
-        private Pose leftHand = new Pose();
-
-        internal MultiplayerAvatarInput(AvatarPoseController poseController)
+        internal MultiplayerAvatarInput(BeatSaber.AvatarCore.AvatarController avatarController/*, BeatSaber.AvatarCore.IAvatarPoseDataProvider poseDataProvider*/)
         {
-            _poseController = poseController;
+            _avatarController = avatarController;
+            _poseDataProvider = avatarController.GetField<BeatSaber.AvatarCore.IAvatarPoseDataProvider, BeatSaber.AvatarCore.AvatarController>("_poseDataProvider");
 
-            _poseController.didUpdatePoseEvent += OnInputChanged;
-            headTransform = _poseController.GetField<Transform, AvatarPoseController>("_headTransform");
-            rightHandTransform = _poseController.GetField<Transform, AvatarPoseController>("_rightHandTransform");
-            leftHandTransform = _poseController.GetField<Transform, AvatarPoseController>("_leftHandTransform");
-            bodyTransform = _poseController.GetField<Transform, AvatarPoseController>("_bodyTransform");
+            headTransform.SetParent(avatarController.transform);
+            rightHandTransform.SetParent(avatarController.transform);
+            leftHandTransform.SetParent(avatarController.transform);
 
             SetEnabled(true);
         }
 
         public void SetEnabled(bool enabled)
         {
-            headTransform.gameObject.SetActive(!enabled);
-            bodyTransform.gameObject.SetActive(!enabled);
-            rightHandTransform.Find("Hand").gameObject.SetActive(!enabled);
-            leftHandTransform.Find("Hand").gameObject.SetActive(!enabled);
+            _poseDataProvider.poseDidChangeEvent -= OnPoseChanged; // TODO: dispose
+            if(enabled)
+                _poseDataProvider.poseDidChangeEvent += OnPoseChanged;
+            _avatarController.avatar?.gameObject.SetActive(!enabled);
         }
 
-        private void OnInputChanged(Vector3 newHeadPosition)
-        {
-            head.position = newHeadPosition;
-            head.rotation = headTransform.localRotation;
-            rightHand.position = rightHandTransform.localPosition;
-            rightHand.rotation = rightHandTransform.localRotation;
-            leftHand.position = leftHandTransform.localPosition;
-            leftHand.rotation = leftHandTransform.localRotation;
-
-            if (rightHand.position == head.position)
-                rightHand.position += Vector3.one * 0.1f;
-            if (rightHand.rotation == head.rotation)
-                rightHand.rotation *= Quaternion.identity;
-            if (leftHand.position == head.position)
-                leftHand.position += Vector3.one * -0.1f;
-            if (leftHand.rotation == head.rotation)
-                leftHand.rotation *= Quaternion.identity;
+        void OnPoseChanged(BeatSaber.AvatarCore.AvatarPoseData poseData) {
+            headTransform.SetLocalPositionAndRotation(poseData.headPose.position, poseData.headPose.rotation);
+            rightHandTransform.SetLocalPositionAndRotation(poseData.rightHandPose.position, poseData.rightHandPose.rotation);
+            rightHandTransform.localEulerAngles = new Vector3(rightHandTransform.localEulerAngles.x, rightHandTransform.localEulerAngles.y, rightHandTransform.localEulerAngles.z + 180);
+            leftHandTransform.SetLocalPositionAndRotation(poseData.leftHandPose.position, poseData.leftHandPose.rotation);
+            leftHandTransform.localEulerAngles = new Vector3(leftHandTransform.localEulerAngles.x, leftHandTransform.localEulerAngles.y, leftHandTransform.localEulerAngles.z + 180);
         }
 
         public bool allowMaintainPelvisPosition => true;
 
-        public event Action? inputChanged;
+        public event Action? inputChanged { add {} remove {} }
 
         public bool TryGetFingerCurl(DeviceUse use, out FingerCurl curl)
         {
@@ -68,21 +52,21 @@ namespace MultiplayerAvatars.Avatars
             return false;
         }
 
-        public bool TryGetPose(DeviceUse use, out Pose pose)
+        public bool TryGetTransform(DeviceUse use, out Transform? transform)
         {
             switch (use)
             {
                 case DeviceUse.Head:
-                    pose = head;
+                    transform = headTransform;
                     return true;
                 case DeviceUse.RightHand:
-                    pose = rightHand;
+                    transform = rightHandTransform;
                     return true;
                 case DeviceUse.LeftHand:
-                    pose = leftHand;
+                    transform = leftHandTransform;
                     return true;
                 default:
-                    pose = Pose.identity;
+                    transform = default;
                     return false;
             }
         }

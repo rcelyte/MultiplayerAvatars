@@ -16,8 +16,9 @@ namespace MultiplayerAvatars.Installers
 
         private MultiplayerConnectedPlayerFacade DecorateConnectedPlayerFacade(MultiplayerConnectedPlayerFacade original)
         {
-            original.GetComponentInChildren<MultiplayerAvatarPoseController>().gameObject.AddComponent<CustomAvatarController>();
-            GameObject.Destroy(original.GetComponentInChildren<AvatarPoseController>().gameObject.GetComponent<Animator>());
+            GameObject gameObject = original.GetComponentInChildren<BeatSaber.AvatarCore.MultiplayerAvatarPoseController>().gameObject;
+            gameObject.AddComponent<CustomAvatarController>();
+            GameObject.Destroy(gameObject.GetComponent<Animator>());
             return original;
         }
     }

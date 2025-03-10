@@ -42,13 +42,23 @@
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="BGNet">
-      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BGNet.dll</HintPath>
+    <Reference Include="BeatSaber.AvatarCore">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BeatSaber.AvatarCore.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="BGNetCore">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BGNetCore.dll</HintPath>
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="CustomAvatar">
       <HintPath>$(BeatSaberDir)\Plugins\CustomAvatar.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="FinalIK">
+      <HintPath>$(BeatSaberDir)\Libs\FinalIK.dll</HintPath>
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
@@ -126,6 +136,11 @@
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="Tweening">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Tweening.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
@@ -196,7 +211,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <!-- <PackageReference Include="Newtonsoft.Json" Version="12.0.3" /> -->
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="BeforeBuild" Condition="'$(NCRUNCH)' != '1'">
     <Error Text="The BeatSaberModdingTools.Tasks nuget package doesn't seem to be installed." Condition="'$(BSMTTaskAssembly)' == ''" />

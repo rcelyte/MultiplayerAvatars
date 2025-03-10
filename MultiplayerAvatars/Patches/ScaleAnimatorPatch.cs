@@ -12,7 +12,7 @@ namespace MultiplayerAvatars.Patches
     // The original animator scales the avatar to and from 0, which is what makes it freak out.
     // Solution: change the animator's parameters so that it scales to 0.05 instead.
 
-    [HarmonyPatch(typeof(ScaleAnimator), nameof(ScaleAnimator.InitIfNeeded))]
+    [HarmonyPatch(typeof(ScaleAnimator), "InitIfNeeded")]
     internal static class ScaleAnimatorPatch
     {
         private static readonly FieldInfo _scaleUpTweenField = typeof(ScaleAnimator).GetField("_scaleUpTween", BindingFlags.NonPublic | BindingFlags.Instance);
